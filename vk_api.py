@@ -20,7 +20,7 @@ import csv
 
 base = 'https://api.vk.com/method/'
 
-group_id = 'getresponseru'
+group_id = 'lamodaru'
 access_token = 'c44329369519758099e485f1bb86f0435399078b140fe6c3fa4d1e46f51e17beee232124809550c8487ae'
 version = '5.1'
 
@@ -60,13 +60,12 @@ def get_members(group_id):
 	# print(json_data)
 	members_count = json_data['response']['count']
 	print('There are {} members in {} community '.format(members_count,group_id))
-	for rq in range(0,(members_count//1000)+1):
-
+	for step,rq in enumerate(range(0,(members_count//1000)+1)):
+		printProgressBar(step,members_count//1000)
 		offset = rq*1000
 
 		new_url = '{}&offset={}'.format(url,offset)
 		json_data = requests.get(new_url).json()
-		print(json_data['response'])
 		members_list.extend(json_data['response']['users'])
 
 		if(rq%3==0) and rq>0:
@@ -123,7 +122,7 @@ def get_friends_for_id(id):
 
 '''
 if __name__ == "__main__":
-	members = get_members('getresponseru')
+	members = get_members(group_id)
 
 	draph_dic = {}
 
@@ -131,12 +130,11 @@ if __name__ == "__main__":
 
 
 	for i,member in enumerate(members):
-		print(type(member))
-		print(member)
+		printProgressBar(i,len(members))
 		# printProgressBar(iteration=i,total=len(members))
 
 		try:
-			print(i,len(members))
+			print('LOOP  ',i,len(members))
 		except:
 			pass
 		friends_fro_id =  get_friends_for_id(member)
