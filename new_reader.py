@@ -2,19 +2,16 @@
 from __future__ import division
 import sys, os
 
-# sys.path.append(os.path.expanduser("/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/networkx"))
-# sys.path.append(os.path.expanduser('/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/nxviz'))
-# print(sys.path)
+
 import pandas as pd
 import matplotlib as mpl
-# %matplotlib inline
+
 
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 from nxviz import ArcPlot
 from nxviz import CircosPlot
-from matplotlib.collections import LineCollection
 
 
 # Define maximal_cliques()
@@ -75,49 +72,37 @@ def graph_loader(nodes,edges):
 	return G
 
 # Define find_nodes_with_highest_deg_cent()
-def find_nodes_with_highest_deg_cent(G):
+def deg_cent(G):
 
     # Compute the degree centrality of G: deg_cent
     deg_cent = nx.degree_centrality(G)
 
-    # Compute the maximum degree centrality: max_dc
-    max_dc = sorted(list(deg_cent.values()), reverse=True)[:30]
-
-    nodes = set()
-
-    # Iterate over the degree centrality dictionary
-    for k, v in deg_cent.items():
-
-        # Check if the current value has the maximum degree centrality
-        if v in max_dc:
-
-            # Add the current node to the set of nodes
-            nodes.add(k)
-
-    return nodes
+    return deg_cent
 
 
 # Define find_nodes_with_highest_deg_cent()
-def find_nodes_with_highest_bet_cent(G):
+def bet_cent(G):
 
-    # Compute the degree centrality of G: deg_cent
+    # Compute the betweenness centrality  of G: deg_cent
     bet_cent = nx.betweenness_centrality(G)
 
-    # Compute the maximum degree centrality: max_dc
-    max_bc = sorted(list(bet_cent.values()), reverse=True)[:30]
+    return bet_cent
 
-    nodes = set()
 
-    # Iterate over the degree centrality dictionary
-    for k, v in bet_cent.items():
+# Define find_nodes_with_highest_deg_cent()
+def eig_cent(G):
 
-        # Check if the current value has the maximum degree centrality
-        if v in max_bc:
+    # Compute the eigenvector centrality of G: eig_cent
+	eig_cent = nx.eigenvector_centrality(G)
+	return eig_cent
 
-            # Add the current node to the set of nodes
-            nodes.add(k)
 
-    return nodes
+# Define page_rank()
+def page_rank(G):
+
+    # Compute the page_rank  of G: pagerank
+	pagerank = nx.pagerank(G)
+	return pagerank
 
 
 def main():
@@ -139,55 +124,41 @@ def main():
 	'''
 	print('Start pandas to nx loading process..', end='')
 	G = di_graph_loader(nodes['node'],edges[['node1','node2']])
-	# print(len(G.nodes()))
-	# print(len(G.edges()))
-	# print(top_dc)
 	print('Done!')
-	# m_c = maximal_cliques(G, 5)
-	print('Start interest graph searching..', end='')
-	top_dc = find_nodes_with_highest_bet_cent(G)
-	# Extract the subgraph with the nodes of interest: T_draw
-	G_draw = get_nodes_and_nbrs(G, top_dc)
-	print('Done!')
+	
 
-	# # Draw the subgraph to the screen
-	# nx.draw(G_draw)
-	# plt.show()
+	print('Start page_rank', end='')
+	page = page_rank(G)
+	page_df = pd.DataFrame(list(page.items()), columns=['node','page_rank'])
+	page_df.to_csv('page_rank.csv')
+	print("Done")
 
 
-	# # Compute the betweenness centrality of T: bet_cen
-	# bet_cen = nx.betweenness_centrality(G_draw)
 
-	# # Compute the degree centrality of T: deg_cen
-	# deg_cen = nx.degree_centrality(G_draw)
-	# _ = plt.figure()
-	# # Create a scatter plot of betweenness centrality and degree centrality
-	# plt.scatter(list(bet_cen.values()),list(deg_cen.values()))
+	# print('Start degree calc..', end='')
+	# degree = deg_cent(G)
+	# degree_df = pd.DataFrame(list(degree.items()), columns=['node','degree'])
+	# print(degree_df.head())
+	# degree_df.to_csv('degree_centrality.csv')
+	# print('Done')
 
-	# # Display the plot
-	# plt.show()	
-	pos = nx.layout.spring_layout(G_draw)
+	# print('Start betweenness calc..', end='')
+	# betweenness = bet_cent(G)
+	# betweenness_df = pd.DataFrame(list(betweenness.items()), columns=['node','betweenness'])
+	# betweenness_df.to_csv('betweenness_centrality.csv')
+	# print('Done')
 
-	node_sizes = [3 + 10 * i for i in range(len(G_draw))]
-	M = G_draw.number_of_edges()
-	edge_colors = range(2, M + 2)
-	edge_alphas = [(5 + i) / (M + 4) for i in range(M)]
 
-	nodes_i = nx.draw_networkx_nodes(G_draw, pos, node_size=node_sizes, node_color='blue')
-	edges_i = nx.draw_networkx_edges(G_draw, pos, node_size=node_sizes, arrowstyle='->',
-	                               arrowsize=10, edge_color=edge_colors,
-	                               edge_cmap=plt.cm.Blues, width=2)
-	# set alpha value for each edge
-	for i in range(M):
-	    edges_i[i].set_alpha(edge_alphas[i])
 
-	pc = mpl.collections.PatchCollection(edges_i, cmap=plt.cm.Blues)
-	pc.set_array(edge_colors)
-	plt.colorbar(pc)
+	# print('Start eigenvector calc..', end='')
+	# eigenvector = eig_cent(G)
+	# eigenvector_df = pd.DataFrame(list(eigenvector.items()), columns=['node','eigenvector'])
+	# eigenvector_df.to_csv('eigenvector_centrality.csv')
+	# print('Done')
+	# print('All shit done')
+	
+	
 
-	ax = plt.gca()
-	ax.set_axis_off()
-	plt.show()
 
 if __name__ == "__main__":
 	main()
